@@ -685,10 +685,15 @@ table { border-collapse: collapse; }
    ========================================================================== */
 .hero h1 .tw {
   opacity: 0;
-  animation: tw-in 1ms steps(1, end) forwards;
+  animation: tw-in 130ms var(--ease) both;
   animation-delay: calc(var(--i) * var(--tw-speed) + var(--tw-start));
 }
-@keyframes tw-in { to { opacity: 1; } }
+@keyframes tw-in { from { opacity: 0; } to { opacity: 1; } }
+
+/* 打完後由 JS 掛上 .tw-done，把最終狀態寫成靜態樣式。
+   不讓文字的可見性長期依賴 animation-fill-mode —— 捲動造成的重繪／圖層
+   重新合成有可能讓 fill 狀態失效，導致已經打出來的字又消失。 */
+.hero h1.tw-done .tw { opacity: 1; animation: none; }
 
 /* 游標：打完最後一個字才出現，之後緩慢閃動 */
 .hero h1 .tw-cursor {
@@ -699,7 +704,7 @@ table { border-collapse: collapse; }
   background: var(--brand);
   border-radius: 1px;
   opacity: 0;
-  animation: tw-in 1ms steps(1, end) forwards, tw-blink 1.15s step-end infinite;
+  animation: tw-in 130ms var(--ease) both, tw-blink 1.15s step-end infinite;
   animation-delay: calc(var(--i) * var(--tw-speed) + var(--tw-start));
 }
 @keyframes tw-blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }

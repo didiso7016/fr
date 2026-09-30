@@ -144,6 +144,36 @@ node tools/build.mjs
 
 ---
 
+## 更新後在線上看不到變化？
+
+`style.css` / `main.js` 的連結會自動帶上內容版號，例如：
+
+```html
+<link rel="stylesheet" href="assets/css/style.css?v=bd2e98e6">
+```
+
+版號是 CSS + JS 的 SHA-1 前 8 碼，由 `node tools/build.mjs` 自動算出。**只要檔案內容有改，版號就變**，瀏覽器與 CDN 一定會重新抓，不會出現「改了配色卻看到舊樣式」。
+
+但前提是 **HTML 也要一起重新產生並上傳** —— 版號寫在 HTML 裡。所以流程永遠是：
+
+```bash
+# 1. 改 tools/data/ 或 assets/css/style.css
+node tools/build.mjs        # 2. 重新產生（版號自動更新）
+git add -A && git commit -m "..." && git push   # 3. 全部一起推
+```
+
+若還是看到舊版，依序排除：
+
+1. **瀏覽器快取** → `Ctrl + Shift + R` 強制重新載入
+2. **CDN 快取** → Cloudflare 之類的要手動 Purge
+3. **只上傳了部分檔案** → 確認 `assets/` 也上傳了
+4. 直接抓線上檔案確認伺服器端到底是什麼：
+   ```bash
+   curl -s https://你的網域/assets/css/style.css | grep -- --brand:
+   ```
+
+---
+
 ## 上線前要處理的三件事
 
 ### 1. 網域

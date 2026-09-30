@@ -11,6 +11,7 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createHash } from 'node:crypto';
 
 import { siteUrl, company, inquiry, categories, nav, footerLinks, ui, formText } from './data/site.mjs';
 import { products } from './data/products.mjs';
@@ -19,6 +20,13 @@ import { hero, aboutBrief, milestones, values, quality, applications, extraDownl
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const LOCALES = ['zh', 'en'];
 const BUILD_DATE = new Date().toISOString().slice(0, 10);
+
+/**
+ * CSS / JS 的內容版號（?v=xxxxxxxx）。
+ * 檔案內容一改，版號就變，瀏覽器與 CDN 一定會重新抓 —— 避免改了配色卻看到舊樣式。
+ * 在 main() 內計算。
+ */
+let assetVersion = '';
 
 /* ==========================================================================
    1. 工具函式
@@ -468,7 +476,7 @@ function page({ locale, dir, file, current, title, description, bodyClass = '', 
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#07331f">
 <link rel="icon" type="image/svg+xml" href="${esc(asset(dir, 'assets/img/favicon.svg'))}">
-<link rel="stylesheet" href="${esc(asset(dir, 'assets/css/style.css'))}">
+<link rel="stylesheet" href="${esc(asset(dir, 'assets/css/style.css') + assetVersion)}">
 <script>document.documentElement.classList.add('js-motion')</script>
 ${blocks ? '  ' + blocks : ''}
 </head>
@@ -483,7 +491,7 @@ ${main}
 <button class="scroll-top-btn" type="button" data-scroll-top aria-label="${esc(locale === 'zh' ? '回到頁面頂端' : 'Back to top')}">${icons.arrowUp}</button>
 
 ${renderFooter({ locale, dir })}
-<script src="${esc(asset(dir, 'assets/js/main.js'))}" defer></script>
+<script src="${esc(asset(dir, 'assets/js/main.js') + assetVersion)}" defer></script>
 </body>
 </html>
 `;
@@ -1460,6 +1468,13 @@ async function main() {
   const written = [];
   const skipped = [];
 
+  // 依 CSS / JS 的實際內容算出版號
+  const fingerprint = createHash('sha1');
+  for (const file of ['assets/css/style.css', 'assets/js/main.js']) {
+    fingerprint.update(await fs.readFile(path.join(ROOT, file)));
+  }
+  assetVersion = '?v=' + fingerprint.digest('hex').slice(0, 8);
+
   // 圖片佔位 + logo / favicon（已存在的檔案不覆寫，方便換成真實照片）
   for (const [file, opts] of IMAGE_PLACEHOLDERS) {
     if (await exists(file)) { skipped.push(file); continue; }
@@ -1490,6 +1505,7 @@ async function main() {
   const pageCount = written.filter((f) => f.endsWith('.html')).length;
   console.log(`✔ 產生完成：${pageCount} 個 HTML 頁面、${written.length} 個檔案`);
   console.log(`  語言：${LOCALES.join(' / ')}    產品：${activeProducts.length} 項    網域：${siteUrl}`);
+  console.log(`  資源版號：${assetVersion}`);
   if (skipped.length) console.log(`  略過既有圖片 ${skipped.length} 個（不覆寫）`);
 }
 

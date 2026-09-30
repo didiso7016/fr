@@ -512,7 +512,30 @@
   }
 
   /* ---------------------------------------------------------------------
-     12. Footer 年份
+     12. Hero 標題打字：打完後固定最終狀態
+         逐字揭露由 CSS 負責（JS 停用也能正常顯示完整標題）。
+         這裡只在最後一個字播完後加上 .tw-done，把 opacity 寫成靜態樣式，
+         避免之後的重繪讓 animation-fill-mode 失效、已顯示的字又消失。
+     ------------------------------------------------------------------ */
+  function initTypewriter() {
+    var title = $('.hero h1');
+    if (!title) return;
+
+    var chars = $('.tw', title);
+    if (!chars.length) return;
+
+    function lockIn() { title.classList.add('tw-done'); }
+
+    var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduced) { lockIn(); return; }
+
+    chars[chars.length - 1].addEventListener('animationend', lockIn, { once: true });
+    // 保險：動畫事件沒觸發（例如頁面在背景分頁載入）也要確保文字留著
+    window.setTimeout(lockIn, 4000);
+  }
+
+  /* ---------------------------------------------------------------------
+     13. Footer 年份
      ------------------------------------------------------------------ */
   function initYear() {
     $$('[data-year]').forEach(function (el) { el.textContent = String(new Date().getFullYear()); });
@@ -531,6 +554,7 @@
     initScrollState();
     initReveal();
     initScrollTop();
+    initTypewriter();
     initYear();
   }
 
