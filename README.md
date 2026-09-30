@@ -61,8 +61,50 @@ node tools/build.mjs
 | 按鈕與欄位文字（中英） | `tools/data/site.mjs` → `ui` / `formText` |
 | 產品名稱、規格、型號表、特色、安裝方式、PDF | `tools/data/products.mjs` |
 | 首頁 Hero、公司簡介、發展歷程、核心價值、應用領域 | `tools/data/content.mjs` |
-| 版面與配色 | `assets/css/style.css` |
+| 版面與配色 | `assets/css/style.css`（色彩全部集中在最上方 `:root` 的 token） |
 | 互動行為 | `assets/js/main.js` |
+
+### 配色
+
+品牌綠以 `#00a54e` 為基準。**注意**：官網 `diffuser.com.tw` 目前 DNS 委派故障（name server 回 REFUSED），無法連線取樣實際 logo 色；`#00a54e` 是暫定值。取得正確色碼後只要改 `assets/css/style.css` 最上方兩個 token 即可全站生效：
+
+```css
+--brand:      #00a54e;  /* 品牌主綠：圖示、邊框、強調、捲動進度條 */
+--brand-dark: #00803c;  /* 連結文字與按鈕底色 */
+```
+
+`--brand-dark` 之所以比品牌綠深，是為了讓白字按鈕與連結文字達到 WCAG AA 對比（純 `#00a54e` 配白字只有 3.2:1，未達 4.5:1）。大面積色塊、圖示、邊框、進度條用的都是純品牌綠。
+
+### 動態效果
+
+| 效果 | 實作位置 |
+| --- | --- |
+| 頁首捲動進度條 | `.scroll-progress`（`transform: scaleX()`，不觸發 reflow） |
+| 捲動進場（淡入上移、同排依序） | `initReveal()` + CSS `.js-motion` |
+| 頁首捲動陰影 | `.site-header.is-stuck` |
+| Hero 標題逐字打字 | `typewriter()`（build.mjs）+ CSS `.tw` / `.tw-cursor` |
+| Hero 載入進場 + 背景緩慢縮放 | CSS `@keyframes hero-rise` / `hero-zoom` |
+| 右下角回到頂部 | `.scroll-top-btn`（捲動超過 400px 才出現） |
+
+進場動畫的隱藏狀態只在 `<html class="js-motion">` 下生效，這個 class 由 `<head>` 內一行 script 掛上 —— 所以 **JS 停用或載入失敗時，內容會完整顯示**，不影響 SEO 與無障礙。另外 `initReveal()` 有 2 秒保險機制，若 IntersectionObserver 完全沒觸發會強制顯示全部內容。
+全部動畫都遵守 `prefers-reduced-motion: reduce`，使用者關閉動態時自動停用。
+
+#### Hero 標題打字效果
+
+**完整標題文字直接寫在 HTML 裡**，只用 CSS 依 `--i` 逐字揭露 —— 所以爬蟲與螢幕閱讀器看到的是完整的 `<h1>專業水處理設備值得信賴的工程夥伴</h1>`，不是被 JS 一個字一個字塞進去的空標題。因為只改 `opacity`、不改內容，寬度從頭到尾固定，不會造成版面跳動（CLS）。
+
+中文逐字、英文逐詞 —— 英文若逐字母，`<span>` 會讓瀏覽器在單字中間換行。節奏由 `typewriter()` 依語言自動給不同的 `--tw-speed`（中文 55ms／英文 150ms），兩者總長都約 1 秒。
+
+調整方式：
+
+```css
+:root {
+  --tw-speed: 55ms;   /* 每字間隔；想快就調小 */
+  --tw-start: .25s;   /* 進站後等多久開始打 */
+}
+```
+
+游標是**打完才出現**的細長綠色光標，不是一路閃的終端機游標 —— SA 要求避免過度科技感。不想要游標就刪掉 `style.css` 的 `.hero h1 .tw-cursor` 區塊。
 
 ### 方式 B：直接改 HTML
 

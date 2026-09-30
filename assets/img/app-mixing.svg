@@ -1,19 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600" role="img" aria-label="污水攪拌">
   <defs>
     <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-      <path d="M40 0H0v40" fill="none" stroke="#dbe6ef" stroke-width="1"/>
+      <path d="M40 0H0v40" fill="none" stroke="#dbe9e0" stroke-width="1"/>
     </pattern>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#f4f8fb"/><stop offset="1" stop-color="#e3eef6"/>
+      <stop offset="0" stop-color="#f4faf6"/><stop offset="1" stop-color="#e0f1e7"/>
     </linearGradient>
   </defs>
   <rect width="800" height="600" fill="url(#bg)"/>
   <rect width="800" height="600" fill="url(#grid)"/>
-  <rect x="16" y="16" width="768" height="568" fill="none" stroke="#c3d6e4" stroke-width="2"/>
-  <g fill="none" stroke="#1690d4" stroke-width="6">
+  <rect x="16" y="16" width="768" height="568" fill="none" stroke="#c4dccd" stroke-width="2"/>
+  <g fill="none" stroke="#00a54e" stroke-width="6">
       <rect x="250" y="280" width="170" height="86" rx="22"/><path d="M420 300h40v46h-40M250 323H180"/>
       <circle cx="520" cy="323" r="14"/>
       <path d="M520 309c14-40 44-52 60-34s-10 42-46 42M520 337c30 22 34 50 12 58s-32-22-18-50"/></g>
-  <text x="40" y="542" font-family="Segoe UI, Noto Sans TC, sans-serif" font-size="26" font-weight="700" fill="#0a2f52">污水攪拌</text>
-  <text x="40" y="572" font-family="Segoe UI, sans-serif" font-size="17" fill="#5b6b7a">Wastewater Mixing</text>
+  <text x="40" y="542" font-family="Segoe UI, Noto Sans TC, sans-serif" font-size="26" font-weight="700" fill="#0b4a2c">污水攪拌</text>
+  <text x="40" y="572" font-family="Segoe UI, sans-serif" font-size="17" fill="#5a6b61">Wastewater Mixing</text>
 </svg>

@@ -38,6 +38,28 @@ const pick = (obj, key, locale) => {
 
 const T = (locale) => ui[locale];
 
+/**
+ * 首頁 Hero 標題的逐字打字效果。
+ * 完整文字直接寫在 HTML 裡（爬蟲與螢幕閱讀器看到的是完整標題），
+ * 只用 CSS 依 --i 逐字揭露，不改變內容寬度，因此不會造成版面跳動。
+ * 中文逐字、英文逐詞（逐字母會讓瀏覽器在單字中間換行）。
+ */
+function typewriter(lines) {
+  const isCjk = lines.some((line) => /[\u3400-\u9fff\uf900-\ufaff]/.test(line));
+  // 中文逐字（間隔短）／英文逐詞（間隔長），總長度都落在 1 秒左右
+  const speed = isCjk ? '55ms' : '150ms';
+  let index = 0;
+
+  const html = lines.map((line) => {
+    const tokens = isCjk ? Array.from(line) : line.split(/(\s+)/).filter(Boolean);
+    return tokens
+      .map((token) => (/^\s+$/.test(token) ? ' ' : `<span class="tw" style="--i:${index++}">${esc(token)}</span>`))
+      .join('');
+  }).join('<br>');
+
+  return `<h1 style="--tw-speed:${speed}">${html}<span class="tw-cursor" aria-hidden="true" style="--i:${index}"></span></h1>`;
+}
+
 /** 站內絕對路徑（含語言前綴） */
 function rootPath(locale, href) {
   const base = locale === 'zh' ? '' : '/en';
@@ -85,15 +107,16 @@ const usedCategories = categories.filter((c) => activeProducts.some((p) => p.cat
    ========================================================================== */
 const icons = {
   logo: `<svg class="brand__mark" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
-    <rect width="48" height="48" rx="8" fill="#06233d"/>
-    <path d="M24 10c4.6 5.4 7.4 9.6 7.4 13.4A7.4 7.4 0 0 1 24 30.8a7.4 7.4 0 0 1-7.4-7.4C16.6 19.6 19.4 15.4 24 10Z" fill="#1690d4"/>
-    <circle cx="15" cy="35" r="2.6" fill="#7ec8ec"/>
-    <circle cx="24" cy="37" r="3.2" fill="#a9dbf2"/>
-    <circle cx="33" cy="35" r="2.6" fill="#7ec8ec"/>
+    <rect width="48" height="48" rx="8" fill="#07331f"/>
+    <path d="M24 10c4.6 5.4 7.4 9.6 7.4 13.4A7.4 7.4 0 0 1 24 30.8a7.4 7.4 0 0 1-7.4-7.4C16.6 19.6 19.4 15.4 24 10Z" fill="#00a54e"/>
+    <circle cx="15" cy="35" r="2.6" fill="#6fd79b"/>
+    <circle cx="24" cy="37" r="3.2" fill="#a5e8c2"/>
+    <circle cx="33" cy="35" r="2.6" fill="#6fd79b"/>
   </svg>`,
   caret: `<svg class="nav__caret" viewBox="0 0 12 12" aria-hidden="true"><path fill="currentColor" d="M6 8.5 1.5 4h9z"/></svg>`,
   arrow: `<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M9 3l5 5-5 5-1.1-1.1L11 9H2V7h9L7.9 4.1z"/></svg>`,
   search: `<svg viewBox="0 0 20 20" aria-hidden="true"><path fill="currentColor" d="M8.5 2a6.5 6.5 0 0 1 5.2 10.4l4.1 4.1-1.4 1.4-4.1-4.1A6.5 6.5 0 1 1 8.5 2Zm0 2a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9Z"/></svg>`,
+  arrowUp: `<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 2.6l5.7 5.7-1.4 1.4L9 6.4V14H7V6.4L3.7 9.7 2.3 8.3z"/></svg>`,
   menu: `<svg viewBox="0 0 20 20" aria-hidden="true"><path fill="currentColor" d="M2 4h16v2H2V4Zm0 5h16v2H2V9Zm0 5h16v2H2v-2Z"/></svg>`,
   pdf: `<svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path fill="currentColor" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6Zm0 2.5L17.5 8H14V4.5ZM8 13h1.8a1.7 1.7 0 0 1 0 3.4H9V18H8v-5Zm1 1v1.4h.8a.7.7 0 0 0 0-1.4H9Zm3.4-1h1.4c1.3 0 2.1.9 2.1 2.5S15.1 18 13.8 18h-1.4v-5Zm1 1v3h.4c.7 0 1.1-.5 1.1-1.5s-.4-1.5-1.1-1.5h-.4Z"/></svg>`,
   download: `<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M7 2h2v5.6l2.3-2.3 1.4 1.4L8 11.4 3.3 6.7l1.4-1.4L7 7.6V2ZM3 12h10v2H3v-2Z"/></svg>`,
@@ -182,6 +205,8 @@ function renderHeader({ locale, dir, current }) {
         </form>
       </div>
     </div>
+
+    <div class="scroll-progress" data-scroll-progress aria-hidden="true"></div>
   </header>`;
 }
 
@@ -441,9 +466,10 @@ function page({ locale, dir, file, current, title, description, bodyClass = '', 
 <meta property="og:image" content="${esc(siteUrl + '/' + String(ogImage).replace(/^\//, ''))}">
 <meta property="og:locale" content="${locale === 'zh' ? 'zh_TW' : 'en_US'}">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="theme-color" content="#06233d">
+<meta name="theme-color" content="#07331f">
 <link rel="icon" type="image/svg+xml" href="${esc(asset(dir, 'assets/img/favicon.svg'))}">
 <link rel="stylesheet" href="${esc(asset(dir, 'assets/css/style.css'))}">
+<script>document.documentElement.classList.add('js-motion')</script>
 ${blocks ? '  ' + blocks : ''}
 </head>
 <body${bodyClass ? ` class="${bodyClass}"` : ''}>
@@ -453,6 +479,8 @@ ${renderHeader({ locale, dir, current })}
 <main id="main">
 ${main}
 </main>
+
+<button class="scroll-top-btn" type="button" data-scroll-top aria-label="${esc(locale === 'zh' ? '回到頁面頂端' : 'Back to top')}">${icons.arrowUp}</button>
 
 ${renderFooter({ locale, dir })}
 <script src="${esc(asset(dir, 'assets/js/main.js'))}" defer></script>
@@ -520,7 +548,7 @@ function buildHome(locale) {
   const t = T(locale);
   const isZh = locale === 'zh';
 
-  const heroTitle = (isZh ? hero.titleZh : hero.titleEn).map(esc).join('<br>');
+  const heroTitle = typewriter(isZh ? hero.titleZh : hero.titleEn);
   const stats = hero.stats.map((s) => `<div class="hero__stat">
           <dt>${esc(pick(s, 'label', locale))}</dt>
           <dd>${esc(pick(s, 'value', locale))}</dd>
@@ -555,7 +583,7 @@ function buildHome(locale) {
     </div>
     <div class="wrap hero__inner">
       <span class="hero__badge">${esc(pick(hero, 'badge', locale))}</span>
-      <h1>${heroTitle}</h1>
+      ${heroTitle}
       <p class="hero__sub-en">${esc(pick(hero, 'subEn', locale))}</p>
       <p class="hero__lead">${esc(pick(hero, 'lead', locale))}</p>
       <div class="btn-row">
@@ -612,7 +640,7 @@ function buildHome(locale) {
     </div>
   </section>
 
-  <section class="section section--navy">
+  <section class="section section--deep">
     <div class="wrap">
       <div class="sec-head">
         <span class="eyebrow">Why Fine Reputation</span>
@@ -646,7 +674,7 @@ function buildHome(locale) {
     ? '產品型錄與規格表集中於技術資料頁，可依設備分類查找；若需要的文件尚未上線，歡迎來信索取。'
     : 'Catalogues and specification sheets are collected on the downloads page by equipment category. If the document you need is not listed yet, please contact us.')}</p>
         <div class="btn-row" style="margin-top:24px">
-          <a class="btn btn--navy" href="${esc(href(locale, dir, '/downloads.html'))}">${esc(isZh ? '前往技術資料' : 'Go to downloads')}</a>
+          <a class="btn btn--deep" href="${esc(href(locale, dir, '/downloads.html'))}">${esc(isZh ? '前往技術資料' : 'Go to downloads')}</a>
         </div>
       </div>
       <div class="split__media">
@@ -1320,44 +1348,44 @@ Sitemap: ${siteUrl}/sitemap.xml
    ========================================================================== */
 function placeholderSvg({ label, sub, variant = 'plain', w = 800, h = 600 }) {
   const glyphs = {
-    diffuser: `<g fill="none" stroke="#1690d4" stroke-width="6">
+    diffuser: `<g fill="none" stroke="#00a54e" stroke-width="6">
       <ellipse cx="400" cy="360" rx="150" ry="46"/><path d="M250 360v-26c0-26 67-46 150-46s150 20 150 46v26"/>
       <circle cx="330" cy="240" r="20"/><circle cx="400" cy="200" r="28"/><circle cx="470" cy="245" r="16"/>
       <circle cx="360" cy="160" r="12"/><circle cx="440" cy="148" r="10"/></g>`,
-    mixer: `<g fill="none" stroke="#1690d4" stroke-width="6">
+    mixer: `<g fill="none" stroke="#00a54e" stroke-width="6">
       <rect x="250" y="280" width="170" height="86" rx="22"/><path d="M420 300h40v46h-40M250 323H180"/>
       <circle cx="520" cy="323" r="14"/>
       <path d="M520 309c14-40 44-52 60-34s-10 42-46 42M520 337c30 22 34 50 12 58s-32-22-18-50"/></g>`,
-    blower: `<g fill="none" stroke="#1690d4" stroke-width="6">
+    blower: `<g fill="none" stroke="#00a54e" stroke-width="6">
       <circle cx="360" cy="320" r="100"/><circle cx="360" cy="320" r="26"/>
       <path d="M460 280h120v80H460M360 220v-40M360 420v40M300 250l-40-30M420 250l40-30"/></g>`,
-    sludge: `<g fill="none" stroke="#1690d4" stroke-width="6">
+    sludge: `<g fill="none" stroke="#00a54e" stroke-width="6">
       <path d="M230 230h340l-118 140v110l-104 40V370z"/><path d="M300 470h200"/>
       <path d="M340 540h120"/></g>`,
-    tank: `<g fill="none" stroke="#1690d4" stroke-width="5">
+    tank: `<g fill="none" stroke="#00a54e" stroke-width="5">
       <path d="M120 400h560v150H120z"/><path d="M120 400V250h560v150"/>
       <path d="M170 550V430M270 550V430M370 550V430M470 550V430M570 550V430" stroke-width="3" opacity=".55"/>
       <circle cx="240" cy="330" r="16"/><circle cx="330" cy="300" r="22"/><circle cx="430" cy="320" r="14"/>
       <circle cx="520" cy="292" r="20"/><circle cx="600" cy="330" r="12"/></g>`,
-    plant: `<g fill="none" stroke="#1690d4" stroke-width="5">
+    plant: `<g fill="none" stroke="#00a54e" stroke-width="5">
       <path d="M110 520h580"/><path d="M160 520V330h150v190M340 520V250h130v270M500 520V370h180v150"/>
       <path d="M200 370h70M200 420h70M380 300h50M380 360h50M380 420h50M540 420h100M540 470h100" stroke-width="3" opacity=".6"/></g>`,
-    doc: `<g fill="none" stroke="#1690d4" stroke-width="5">
+    doc: `<g fill="none" stroke="#00a54e" stroke-width="5">
       <path d="M270 170h190l110 110v330H270z"/><path d="M460 170v110h110"/>
       <path d="M320 380h220M320 440h220M320 500h140" stroke-width="4" opacity=".7"/></g>`,
-    quality: `<g fill="none" stroke="#1690d4" stroke-width="5">
+    quality: `<g fill="none" stroke="#00a54e" stroke-width="5">
       <path d="M400 150l170 70v150c0 110-72 180-170 210-98-30-170-100-170-210V220z"/>
       <path d="M330 370l52 52 108-108" stroke-width="8"/></g>`,
-    install1: `<g fill="none" stroke="#1690d4" stroke-width="5"><path d="M150 180v380M150 560h500M560 180v380"/>
+    install1: `<g fill="none" stroke="#00a54e" stroke-width="5"><path d="M150 180v380M150 560h500M560 180v380"/>
       <path d="M150 300h60v-40h-60" stroke-width="4"/><rect x="200" y="380" width="110" height="60" rx="16"/>
       <path d="M255 380V200M310 400h30v20h-30"/><path d="M150 240h40M150 340h40M150 440h40" stroke-width="3" opacity=".6"/></g>`,
-    install2: `<g fill="none" stroke="#1690d4" stroke-width="5"><path d="M120 560h560M120 200v360"/>
+    install2: `<g fill="none" stroke="#00a54e" stroke-width="5"><path d="M120 560h560M120 200v360"/>
       <path d="M330 560v-70h90v70" stroke-width="4"/><rect x="320" y="400" width="110" height="60" rx="16"/>
       <path d="M430 420h30v20h-30"/><path d="M470 430c50-20 90 0 90 0" stroke-width="3" opacity=".6"/></g>`,
-    install3: `<g fill="none" stroke="#1690d4" stroke-width="5"><path d="M160 160v400M160 560h520"/>
+    install3: `<g fill="none" stroke="#00a54e" stroke-width="5"><path d="M160 160v400M160 560h520"/>
       <path d="M160 330h120" stroke-width="4"/><rect x="280" y="300" width="110" height="60" rx="16"/>
       <path d="M390 320h30v20h-30"/><path d="M160 290l90 30-90 30" stroke-width="3" opacity=".5"/></g>`,
-    install4: `<g fill="none" stroke="#1690d4" stroke-width="5"><path d="M130 560h540M130 190v370"/>
+    install4: `<g fill="none" stroke="#00a54e" stroke-width="5"><path d="M130 560h540M130 190v370"/>
       <path d="M210 560V300h70" stroke-width="4"/><rect x="280" y="330" width="110" height="60" rx="16" transform="rotate(-12 335 360)"/>
       <path d="M392 338l28 6-6 20-28-6"/><path d="M470 300h120v60H470" stroke-width="3" opacity=".5" stroke-dasharray="10 8"/></g>`,
     plain: '',
@@ -1366,18 +1394,18 @@ function placeholderSvg({ label, sub, variant = 'plain', w = 800, h = 600 }) {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" role="img" aria-label="${esc(label)}">
   <defs>
     <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-      <path d="M40 0H0v40" fill="none" stroke="#dbe6ef" stroke-width="1"/>
+      <path d="M40 0H0v40" fill="none" stroke="#dbe9e0" stroke-width="1"/>
     </pattern>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#f4f8fb"/><stop offset="1" stop-color="#e3eef6"/>
+      <stop offset="0" stop-color="#f4faf6"/><stop offset="1" stop-color="#e0f1e7"/>
     </linearGradient>
   </defs>
   <rect width="${w}" height="${h}" fill="url(#bg)"/>
   <rect width="${w}" height="${h}" fill="url(#grid)"/>
-  <rect x="16" y="16" width="${w - 32}" height="${h - 32}" fill="none" stroke="#c3d6e4" stroke-width="2"/>
+  <rect x="16" y="16" width="${w - 32}" height="${h - 32}" fill="none" stroke="#c4dccd" stroke-width="2"/>
   ${glyphs[variant] || ''}
-  <text x="40" y="${h - 58}" font-family="Segoe UI, Noto Sans TC, sans-serif" font-size="26" font-weight="700" fill="#0a2f52">${esc(label)}</text>
-  ${sub ? `<text x="40" y="${h - 28}" font-family="Segoe UI, sans-serif" font-size="17" fill="#5b6b7a">${esc(sub)}</text>` : ''}
+  <text x="40" y="${h - 58}" font-family="Segoe UI, Noto Sans TC, sans-serif" font-size="26" font-weight="700" fill="#0b4a2c">${esc(label)}</text>
+  ${sub ? `<text x="40" y="${h - 28}" font-family="Segoe UI, sans-serif" font-size="17" fill="#5a6b61">${esc(sub)}</text>` : ''}
 </svg>
 `;
 }
@@ -1405,11 +1433,11 @@ const IMAGE_PLACEHOLDERS = [
 ];
 
 const LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
-  <rect width="48" height="48" rx="8" fill="#06233d"/>
-  <path d="M24 10c4.6 5.4 7.4 9.6 7.4 13.4A7.4 7.4 0 0 1 24 30.8a7.4 7.4 0 0 1-7.4-7.4C16.6 19.6 19.4 15.4 24 10Z" fill="#1690d4"/>
-  <circle cx="15" cy="35" r="2.6" fill="#7ec8ec"/>
-  <circle cx="24" cy="37" r="3.2" fill="#a9dbf2"/>
-  <circle cx="33" cy="35" r="2.6" fill="#7ec8ec"/>
+  <rect width="48" height="48" rx="8" fill="#07331f"/>
+  <path d="M24 10c4.6 5.4 7.4 9.6 7.4 13.4A7.4 7.4 0 0 1 24 30.8a7.4 7.4 0 0 1-7.4-7.4C16.6 19.6 19.4 15.4 24 10Z" fill="#00a54e"/>
+  <circle cx="15" cy="35" r="2.6" fill="#6fd79b"/>
+  <circle cx="24" cy="37" r="3.2" fill="#a5e8c2"/>
+  <circle cx="33" cy="35" r="2.6" fill="#6fd79b"/>
 </svg>
 `;
 

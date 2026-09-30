@@ -409,7 +409,110 @@
   }
 
   /* ---------------------------------------------------------------------
-     9. Footer 年份
+     9. 捲動：進度條 + Header 陰影狀態
+     ------------------------------------------------------------------ */
+  function initScrollState() {
+    var header = $('.site-header');
+    var bar = $('[data-scroll-progress]');
+    if (!header && !bar) return;
+
+    var ticking = false;
+
+    function update() {
+      var max = document.documentElement.scrollHeight - window.innerHeight;
+      var ratio = max > 0 ? Math.min(window.scrollY / max, 1) : 0;
+      if (bar) bar.style.transform = 'scaleX(' + ratio + ')';
+      if (header) header.classList.toggle('is-stuck', window.scrollY > 40);
+      ticking = false;
+    }
+
+    window.addEventListener('scroll', function () {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(update);
+    }, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  }
+
+  /* ---------------------------------------------------------------------
+     10. 捲動進場動畫
+         隱藏樣式寫在 CSS 的 .js-motion 之下（class 由 <head> 的 script 掛上），
+         所以 JS 失效時內容仍完整顯示。
+     ------------------------------------------------------------------ */
+  var REVEAL_SELECTOR = [
+    '.sec-head', '.card', '.cat-card', '.feature', '.timeline__item',
+    '.install-item', '.dl-card', '.split__media', '.split .prose',
+    '.table-scroll', '.info-list', '.product-meta', '.hero__stat', '[data-gallery]'
+  ].join(', ');
+
+  var STAGGER_MS = 70;
+  var STAGGER_MAX = 320;
+
+  function initReveal() {
+    var targets = $$(REVEAL_SELECTOR);
+    if (!targets.length) return;
+
+    var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function showAll() { targets.forEach(function (el) { el.classList.add('is-in'); }); }
+
+    if (reduced || !('IntersectionObserver' in window)) { showAll(); return; }
+
+    // 依同一父層分組，讓相鄰元素依序進場
+    var order = new Map();
+    var counts = new Map();
+    targets.forEach(function (el) {
+      var parent = el.parentElement;
+      var index = counts.get(parent) || 0;
+      order.set(el, index);
+      counts.set(parent, index + 1);
+    });
+
+    var fired = false;
+    var observer = new IntersectionObserver(function (entries) {
+      fired = true;
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        var el = entry.target;
+        el.style.transitionDelay = Math.min((order.get(el) || 0) * STAGGER_MS, STAGGER_MAX) + 'ms';
+        el.classList.add('is-in');
+        observer.unobserve(el);
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
+
+    targets.forEach(function (el) { observer.observe(el); });
+
+    // 保險：觀察器完全沒觸發時，2 秒後強制顯示，避免內容看不到
+    window.setTimeout(function () { if (!fired) showAll(); }, 2000);
+  }
+
+  /* ---------------------------------------------------------------------
+     11. 回到頂部
+     ------------------------------------------------------------------ */
+  function initScrollTop() {
+    var btn = $('[data-scroll-top]');
+    if (!btn) return;
+
+    var ticking = false;
+    function update() {
+      btn.classList.toggle('is-visible', window.scrollY > 400);
+      ticking = false;
+    }
+    window.addEventListener('scroll', function () {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(update);
+    }, { passive: true });
+
+    btn.addEventListener('click', function () {
+      var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      window.scrollTo({ top: 0, behavior: reduced ? 'auto' : 'smooth' });
+    });
+    update();
+  }
+
+  /* ---------------------------------------------------------------------
+     12. Footer 年份
      ------------------------------------------------------------------ */
   function initYear() {
     $$('[data-year]').forEach(function (el) { el.textContent = String(new Date().getFullYear()); });
@@ -425,6 +528,9 @@
     initAnchorNav();
     initInquiryLinks();
     initInquiryForm();
+    initScrollState();
+    initReveal();
+    initScrollTop();
     initYear();
   }
 

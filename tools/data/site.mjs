@@ -86,15 +86,8 @@ export const categories = [
 /** href 皆為「不含語言前綴」的路徑，產生器會自動補上 /en */
 export const nav = [
   { zh: '首頁', en: 'Home', href: '/' },
-  {
-    zh: '關於九譽', en: 'About', href: '/about.html',
-    children: [
-      { zh: '公司介紹', en: 'Company Profile', href: '/about.html#profile' },
-      { zh: '發展歷程', en: 'Milestones', href: '/about.html#history' },
-      { zh: '公司優勢', en: 'Our Strengths', href: '/about.html#strengths' },
-      { zh: '品質理念', en: 'Quality Philosophy', href: '/about.html#quality' },
-    ],
-  },
+  // 關於九譽底下都是同一頁的錨點，不做下拉，直接連到頁面
+  { zh: '關於九譽', en: 'About', href: '/about.html' },
   {
     zh: '產品中心', en: 'Products', href: '/products/',
     /** children 由產生器依 categories 自動補上 */
