@@ -1,0 +1,272 @@
+/* ==========================================================================
+   網站基本設定、公司資料、導覽、介面文案（繁中／英文）
+   修改這裡 → 執行 `node tools/build.mjs` → 全站 HTML 重新產生
+   ========================================================================== */
+
+/** 正式上線請改成實際網域（用於 canonical / og:url / sitemap.xml） */
+export const siteUrl = 'https://www.fine-reputation.com.tw';
+
+export const company = {
+  nameZh: '九譽有限公司',
+  nameEn: 'Fine Reputation Co., Ltd.',
+  since: 1996,
+  taxId: '96967839',
+  zip: '324032',
+  addressZh: '桃園市平鎮區中豐路南勢二段460巷120-3號',
+  addressEn: 'No. 120-3, Ln. 460, Sec. 2, Zhongfeng Rd., Nanshi, Pingzhen Dist., Taoyuan City 324032, Taiwan (R.O.C.)',
+  tel: '(03) 470-9985',
+  telHref: '+88634709985',
+  fax: '(03) 470-4202',
+  email: 'fine.rpt@msa.hinet.net',
+  /** Google Maps 內嵌網址；留空則不顯示地圖 */
+  mapEmbed: 'https://www.google.com/maps?q=' +
+    encodeURIComponent('桃園市平鎮區中豐路南勢二段460巷120-3號') + '&output=embed',
+};
+
+/**
+ * 詢價表單送出方式
+ *   endpoint 留空  → 以使用者郵件軟體寄出（純靜態網站的預設降級行為）
+ *   endpoint 有值  → 以 POST FormData 送到該網址（可接 Formspree / Web3Forms / 自建 API）
+ */
+export const inquiry = {
+  endpoint: '',
+  mailto: company.email,
+};
+
+/* --- 產品分類 ------------------------------------------------------------ */
+export const categories = [
+  {
+    slug: 'aeration',
+    zh: '曝氣設備',
+    en: 'Aeration Equipment',
+    descZh: '細氣泡散氣系統，提升氧氣傳遞效率並降低曝氣能耗。',
+    descEn: 'Fine bubble diffusion systems for higher oxygen transfer efficiency and lower aeration energy.',
+    icon: 'bubbles',
+    formTypeZh: '曝氣設備', formTypeEn: 'Aeration equipment',
+  },
+  {
+    slug: 'mixing',
+    zh: '攪拌設備',
+    en: 'Mixing Equipment',
+    descZh: '沉水攪拌機，用於水體與污泥攪拌、防止沉澱及水流循環。',
+    descEn: 'Submersible mixers for liquid and sludge agitation, sedimentation prevention and flow circulation.',
+    icon: 'propeller',
+    formTypeZh: '沉水攪拌機', formTypeEn: 'Submersible mixer',
+  },
+  {
+    slug: 'blower',
+    zh: '鼓風設備',
+    en: 'Blowers',
+    descZh: 'Hoffman & Lamson 離心式鼓風機與抽風設備，適用工業鼓風系統。',
+    descEn: 'Hoffman & Lamson centrifugal blowers and exhausters for industrial air systems.',
+    icon: 'blower',
+    formTypeZh: '鼓風設備', formTypeEn: 'Blower',
+  },
+  {
+    slug: 'sludge',
+    zh: '污泥處理設備',
+    en: 'Sludge Treatment',
+    descZh: '污泥脫水相關設備，降低污泥含水率與後續處理成本。',
+    descEn: 'Sludge dewatering equipment that reduces water content and downstream disposal cost.',
+    icon: 'filter',
+    formTypeZh: '污泥處理設備', formTypeEn: 'Sludge treatment',
+  },
+  {
+    slug: 'other',
+    zh: '其他水處理設備',
+    en: 'Other Water Treatment Equipment',
+    descZh: '其他污水與工業水處理相關設備，歡迎依需求洽詢。',
+    descEn: 'Additional wastewater and industrial water treatment equipment — enquiries welcome.',
+    icon: 'valve',
+    formTypeZh: '其他', formTypeEn: 'Other',
+  },
+];
+
+/* --- 導覽 --------------------------------------------------------------- */
+/** href 皆為「不含語言前綴」的路徑，產生器會自動補上 /en */
+export const nav = [
+  { zh: '首頁', en: 'Home', href: '/' },
+  {
+    zh: '關於九譽', en: 'About', href: '/about.html',
+    children: [
+      { zh: '公司介紹', en: 'Company Profile', href: '/about.html#profile' },
+      { zh: '發展歷程', en: 'Milestones', href: '/about.html#history' },
+      { zh: '公司優勢', en: 'Our Strengths', href: '/about.html#strengths' },
+      { zh: '品質理念', en: 'Quality Philosophy', href: '/about.html#quality' },
+    ],
+  },
+  {
+    zh: '產品中心', en: 'Products', href: '/products/',
+    /** children 由產生器依 categories 自動補上 */
+    childrenFromCategories: true,
+  },
+  { zh: '應用領域', en: 'Applications', href: '/applications.html' },
+  { zh: '技術資料', en: 'Downloads', href: '/downloads.html' },
+  { zh: '聯絡我們', en: 'Contact', href: '/contact.html' },
+];
+
+export const footerLinks = [
+  { zh: '公司介紹', en: 'Company Profile', href: '/about.html' },
+  { zh: '產品中心', en: 'Products', href: '/products/' },
+  { zh: '應用領域', en: 'Applications', href: '/applications.html' },
+  { zh: '技術資料', en: 'Downloads', href: '/downloads.html' },
+  { zh: '聯絡我們', en: 'Contact Us', href: '/contact.html' },
+];
+
+/* --- 介面文案 ----------------------------------------------------------- */
+export const ui = {
+  zh: {
+    htmlLang: 'zh-Hant-TW',
+    langLabel: '繁中',
+    skipToContent: '跳至主要內容',
+    menu: '選單',
+    openMenu: '開啟選單',
+    search: '搜尋',
+    searchPlaceholder: '搜尋產品名稱或型號，例如：PJM、散氣',
+    searchProducts: '搜尋產品',
+    home: '首頁',
+    viewProducts: '查看產品',
+    viewProduct: '查看產品',
+    contactUs: '聯絡我們',
+    learnMore: '了解更多',
+    all: '全部',
+    resultCount: '共 {n} 項產品',
+    noResult: '找不到符合條件的產品，請調整分類或關鍵字。',
+    noResultDoc: '此分類目前沒有文件。',
+    inquireThis: '詢問此產品',
+    downloadPdf: '下載產品型錄 PDF',
+    pdfPending: '型錄準備中，請來信索取',
+    relatedProducts: '相關產品',
+    backToProducts: '返回產品中心',
+    features: '產品特色',
+    specs: '技術規格',
+    quickSpecs: '產品規格',
+    applicationsTitle: '適用場所',
+    installation: '安裝方式',
+    documents: '文件下載',
+    overview: '產品說明',
+    brand: '品牌',
+    model: '型號',
+    category: '分類',
+    tableHint: '規格表可左右滑動檢視完整欄位。',
+    specNote: '以上規格依原廠型錄為準，實際數據請洽詢本公司。',
+    fileLanguage: '語言',
+    fileVersion: '版本',
+    fileSize: '檔案大小',
+    filePublish: '更新日期',
+    langNames: { zh: '繁體中文', en: 'English', multi: '中／英文' },
+    copyright: 'All Rights Reserved.',
+    quickLinks: '快速連結',
+    contactInfo: '聯絡資訊',
+    taxIdLabel: '統一編號',
+    addressLabel: '地址',
+    telLabel: '電話',
+    faxLabel: '傳真',
+    emailLabel: 'Email',
+  },
+  en: {
+    htmlLang: 'en',
+    langLabel: 'EN',
+    skipToContent: 'Skip to main content',
+    menu: 'Menu',
+    openMenu: 'Open menu',
+    search: 'Search',
+    searchPlaceholder: 'Search by product name or model, e.g. PJM, diffuser',
+    searchProducts: 'Search products',
+    home: 'Home',
+    viewProducts: 'View Products',
+    viewProduct: 'View product',
+    contactUs: 'Contact Us',
+    learnMore: 'Learn more',
+    all: 'All',
+    resultCount: '{n} products',
+    noResult: 'No products match your filter. Try another category or keyword.',
+    noResultDoc: 'No documents in this category yet.',
+    inquireThis: 'Enquire about this product',
+    downloadPdf: 'Download catalogue (PDF)',
+    pdfPending: 'Catalogue on request',
+    relatedProducts: 'Related products',
+    backToProducts: 'Back to products',
+    features: 'Features',
+    specs: 'Specifications',
+    quickSpecs: 'Specifications',
+    applicationsTitle: 'Applications',
+    installation: 'Installation',
+    documents: 'Documents',
+    overview: 'Overview',
+    brand: 'Brand',
+    model: 'Model',
+    category: 'Category',
+    tableHint: 'Scroll the table horizontally to see all columns.',
+    specNote: 'Specifications follow the manufacturer catalogue. Please contact us to confirm actual figures.',
+    fileLanguage: 'Language',
+    fileVersion: 'Version',
+    fileSize: 'File size',
+    filePublish: 'Updated',
+    langNames: { zh: 'Traditional Chinese', en: 'English', multi: 'Chinese / English' },
+    copyright: 'All Rights Reserved.',
+    quickLinks: 'Quick Links',
+    contactInfo: 'Contact',
+    taxIdLabel: 'Tax ID',
+    addressLabel: 'Address',
+    telLabel: 'Tel',
+    faxLabel: 'Fax',
+    emailLabel: 'Email',
+  },
+};
+
+/* --- 詢價表單文案 ------------------------------------------------------- */
+export const formText = {
+  zh: {
+    title: '詢價表單',
+    lead: '請填寫以下資訊，我們將盡快回覆您的需求。標示 * 為必填欄位。',
+    companyName: '公司名稱',
+    contactName: '聯絡人',
+    email: 'Email',
+    phone: '電話',
+    country: '國家 / 地區',
+    productType: '產品類型',
+    productName: '產品名稱',
+    productModel: '產品型號',
+    quantity: '預估數量',
+    message: '需求說明',
+    attachment: '附件',
+    attachmentHint: '可上傳規格書或現場照片（PDF / JPG / PNG，10MB 以內）',
+    selectPlaceholder: '請選擇',
+    submit: '送出詢價',
+    sending: '送出中…',
+    success: '感謝您的詢問，我們將盡快與您聯絡。',
+    error: '送出失敗，請稍後再試，或直接電話聯絡 (03) 470-9985。',
+    mailFallback: '已為您開啟郵件軟體，請確認內容後寄出。',
+    required: '此欄為必填',
+    invalidEmail: 'Email 格式不正確',
+    privacy: '您提供的資料僅用於本次詢價聯絡，不會提供給第三方。',
+    types: ['曝氣設備', '沉水攪拌機', '鼓風設備', '污泥處理設備', '其他'],
+  },
+  en: {
+    title: 'Enquiry Form',
+    lead: 'Tell us what you need and we will reply as soon as possible. Fields marked * are required.',
+    companyName: 'Company name',
+    contactName: 'Contact person',
+    email: 'Email',
+    phone: 'Phone',
+    country: 'Country / Region',
+    productType: 'Product type',
+    productName: 'Product name',
+    productModel: 'Model',
+    quantity: 'Estimated quantity',
+    message: 'Requirements',
+    attachment: 'Attachment',
+    attachmentHint: 'Specification sheet or site photo (PDF / JPG / PNG, max 10MB)',
+    selectPlaceholder: 'Please select',
+    submit: 'Send enquiry',
+    sending: 'Sending…',
+    success: 'Thank you for your enquiry. We will contact you shortly.',
+    error: 'Submission failed. Please try again later or call +886-3-470-9985.',
+    mailFallback: 'Your mail client has been opened — please review and send.',
+    required: 'This field is required',
+    invalidEmail: 'Please enter a valid email address',
+    privacy: 'Your information is used only to respond to this enquiry and is never shared with third parties.',
+    types: ['Aeration equipment', 'Submersible mixer', 'Blower', 'Sludge treatment', 'Other'],
+  },
+};

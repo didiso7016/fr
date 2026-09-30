@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600" role="img" aria-label="污水處理">
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0v40" fill="none" stroke="#dbe6ef" stroke-width="1"/>
+    </pattern>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f4f8fb"/><stop offset="1" stop-color="#e3eef6"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#bg)"/>
+  <rect width="800" height="600" fill="url(#grid)"/>
+  <rect x="16" y="16" width="768" height="568" fill="none" stroke="#c3d6e4" stroke-width="2"/>
+  <g fill="none" stroke="#1690d4" stroke-width="5">
+      <path d="M110 520h580"/><path d="M160 520V330h150v190M340 520V250h130v270M500 520V370h180v150"/>
+      <path d="M200 370h70M200 420h70M380 300h50M380 360h50M380 420h50M540 420h100M540 470h100" stroke-width="3" opacity=".6"/></g>
+  <text x="40" y="542" font-family="Segoe UI, Noto Sans TC, sans-serif" font-size="26" font-weight="700" fill="#0a2f52">污水處理</text>
+  <text x="40" y="572" font-family="Segoe UI, sans-serif" font-size="17" fill="#5b6b7a">Wastewater Treatment</text>
+</svg>
